@@ -1,4 +1,4 @@
-package com.github.orgf.ui.theme
+package com.github.orgf.utils.ui
 
 import androidx.compose.ui.graphics.Color
 

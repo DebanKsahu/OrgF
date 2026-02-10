@@ -1,6 +1,5 @@
-package com.github.orgf.ui.theme
+package com.github.orgf.utils.ui
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme

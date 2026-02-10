@@ -4,6 +4,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -13,24 +14,26 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.net.toUri
+import com.github.orgf.core.ServiceState
 import com.github.orgf.core.filemanager.models.NewFileEvent
+import com.github.orgf.utils.enums.getFileType
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.launch
+import org.koin.android.ext.android.inject
 import java.io.File
 
 class FolderObserverService: Service() {
 
     private var folderObserver: FileObserver? = null
+    private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
-    companion object {
-        private val _newFileEvents = MutableSharedFlow<NewFileEvent>(
-            replay = 1,
-            onBufferOverflow = BufferOverflow.DROP_OLDEST,
-        )
-        val newFileEvent = _newFileEvents.asSharedFlow()
-    }
+    private val serviceState: ServiceState by inject()
 
     override fun onBind(p0: Intent?): IBinder? {
         return null
@@ -51,16 +54,14 @@ class FolderObserverService: Service() {
     override fun onDestroy() {
         super.onDestroy()
         folderObserver?.stopWatching()
+        serviceScope.cancel()
     }
 
     private fun startFolderObserverService(uri: Uri) {
         val absoluteFolderPath = toAbsolutePathFromUri(treeUri = uri)
 
-        Log.d("FileObserverService", "Converted URI to Path: $absoluteFolderPath")
-
         val folder = File(absoluteFolderPath)
         if (!folder.exists()) {
-            Log.e("FileObserverService", "Folder does not exist on disk!")
             return
         }
 
@@ -69,27 +70,26 @@ class FolderObserverService: Service() {
             folder,
             MOVED_TO or CREATE or CLOSE_WRITE
         ) {
-            override fun onEvent(event: Int, filePath: String?) {
-                if (filePath==null) return
-                val fullFilePath = "$absoluteFolderPath/$filePath"
-                if (event==MOVED_TO || event==CLOSE_WRITE) {
-                    Log.d("FolderObserverService", "🔥 TRUE PUSH EVENT!")
-                    Log.d("FolderObserverService", "📂 Folder: $absoluteFolderPath")
-                    Log.d("FolderObserverService", "📄 File:   $filePath")
-                    Log.d("FolderObserverService", "🚀 FULL:   $fullFilePath")
+            override fun onEvent(event: Int, fileName: String?) {
+                if (fileName==null) return
+                val fullFilePath = "$absoluteFolderPath/$fileName"
+                serviceScope.launch {
+                    serviceState.emitNewFileEvent(
+                        fileName = fileName,
+                        fullFilePath = fullFilePath
+                    )
                 }
             }
         }
 
         folderObserver?.startWatching()
-        Log.d("FolderObserverService", "Kernel hook attached. Waiting for files...")
     }
 
     private fun startForegroundNotification() {
-        val channelId = "FolderObserverChannel"
+        val channelId = "FolderObserverServiceChannel"
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val notificationChannel = NotificationChannel(channelId, "Folder Observer", NotificationManager.IMPORTANCE_LOW)
+            val notificationChannel = NotificationChannel(channelId, "Folder Observer Service", NotificationManager.IMPORTANCE_LOW)
             getSystemService(NotificationManager::class.java).createNotificationChannel(notificationChannel)
         }
 
@@ -97,8 +97,13 @@ class FolderObserverService: Service() {
             .setContentTitle("OrgF File Organizer Active")
             .setContentText("Listening for file events...")
             .setSmallIcon(android.R.drawable.ic_menu_view)
+            .setOngoing(true)
             .build()
-        startForeground(1, notification)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startForeground(1, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+        } else {
+            startForeground(1, notification)
+        }
     }
 
     private fun toAbsolutePathFromUri(treeUri: Uri): String {
