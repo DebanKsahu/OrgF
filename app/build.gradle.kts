@@ -5,9 +5,7 @@ plugins {
 
 android {
     namespace = "com.github.orgf"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.github.orgf"
@@ -54,6 +52,10 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
+    // Coroutine
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.coroutines.play.services)
+
     // MediaPipe
     implementation(libs.tasks.genai)
 
@@ -67,5 +69,8 @@ dependencies {
 
     // PdfBox
     implementation(libs.pdfbox.android)
+
+    // Google ML Kit
+    implementation(libs.play.services.mlkit.text.recognition)
 
 }

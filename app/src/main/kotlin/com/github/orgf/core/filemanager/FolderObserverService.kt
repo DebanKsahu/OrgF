@@ -72,6 +72,11 @@ class FolderObserverService: Service() {
         ) {
             override fun onEvent(event: Int, fileName: String?) {
                 if (fileName==null) return
+
+                val isMoved = (event and MOVED_TO)!=0
+                val isClose = (event and CLOSE_WRITE)!=0
+                if (!isMoved and !isClose) return
+
                 val fullFilePath = "$absoluteFolderPath/$fileName"
                 serviceScope.launch {
                     serviceState.emitNewFileEvent(

@@ -10,21 +10,24 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.github.orgf.core.ServiceState
+import com.github.orgf.core.agent.tool.PdfTextExtractor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
+import java.io.File
 
 class AgentService: Service() {
 
     private val serviceState: ServiceState by inject()
     private val agentServiceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
+    private val pdfTextExtractor: PdfTextExtractor by inject()
 
 
     override fun onBind(p0: Intent?): IBinder? {
@@ -49,10 +52,11 @@ class AgentService: Service() {
                 .flatMapMerge(concurrency = 4) { newFileEvent ->
                     flow {
                         emit(newFileEvent)
-                        TODO("Write Logic for handling data events")
                     }
                 }.collect { newFileEvent ->
-                    TODO("Write the logic for what to do after data get handled")
+                    Log.d("AgentService", "New File Event: $newFileEvent")
+                    val extractedText = pdfTextExtractor.extractSmallText(File(newFileEvent.fullPath))
+                    Log.d("Agent Service", "Extracted Text: $extractedText")
                 }
         }
     }
