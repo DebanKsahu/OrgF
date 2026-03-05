@@ -58,6 +58,7 @@ dependencies {
 
     // MediaPipe
     implementation(libs.tasks.genai)
+    implementation(libs.tasks.text)
 
     // Koin
     implementation(platform(libs.koin.bom))
@@ -72,5 +73,9 @@ dependencies {
 
     // Google ML Kit
     implementation(libs.play.services.mlkit.text.recognition)
+
+    // Room Database
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
 
 }

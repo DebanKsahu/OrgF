@@ -12,12 +12,16 @@ kotlin = "2.3.10"
 composeBom = "2026.01.01"
 pdfboxAndroid = "2.0.27.0"
 playServicesMlkitTextRecognition = "19.0.1"
+roomRuntime = "2.8.4"
 tasksGenai = "0.10.32"
 
 koin-bom = "4.1.1"
+tasksText = "latest.release"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomRuntime" }
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -45,6 +49,7 @@ koin-compose = { module = "io.insert-koin:koin-compose" }
 koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel" }
 koin-ktor = { module = "io.insert-koin:koin-ktor" }
 koin-test = { module = "io.insert-koin:koin-test" }
+tasks-text = { module = "com.google.mediapipe:tasks-text", version.ref = "tasksText" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
