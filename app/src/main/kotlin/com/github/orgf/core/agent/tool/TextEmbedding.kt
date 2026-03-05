@@ -71,6 +71,10 @@ class TextEmbedding(
         }
     }
 
+    fun compareEmbeddings(embedding1: Embedding, embedding2: Embedding): Double {
+        return TextEmbedder.cosineSimilarity(embedding1, embedding2)
+    }
+
     fun calculateEmbedding(text: String): Embedding? {
         return if (textEmbedder != null) {
             textEmbedder

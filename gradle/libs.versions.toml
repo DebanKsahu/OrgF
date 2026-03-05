@@ -16,7 +16,7 @@ roomRuntime = "2.8.4"
 tasksGenai = "0.10.32"
 
 koin-bom = "4.1.1"
-tasksText = "latest.release"
+tasksText = "0.10.32"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -54,4 +54,3 @@ tasks-text = { module = "com.google.mediapipe:tasks-text", version.ref = "tasksT
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-
