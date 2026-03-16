@@ -1,7 +1,7 @@
 package com.github.orgf.di
 
 import com.github.orgf.core.di.getCoreKoinModule
-import org.koin.core.KoinApplication
+import com.github.orgf.folderpickerscreen.di.getFolderPickerKoinModule
 import org.koin.core.context.startKoin
 import org.koin.dsl.KoinAppDeclaration
 
@@ -12,7 +12,12 @@ fun initKoin(
         platformDeclaration()
         modules(
             // Core
-            getCoreKoinModule()
+            getCoreKoinModule(),
+
+            // Folder Picker
+            getFolderPickerKoinModule()
         )
+
+
     }
 }
