@@ -44,6 +44,8 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.runtime)
+    implementation(libs.navigation3.runtime)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -63,10 +65,9 @@ dependencies {
     // Koin
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.core)
-    implementation(libs.koin.compose.viewmodel)
-    implementation(libs.koin.compose)
-    implementation(libs.koin.androidx.compose)
     implementation(libs.koin.android)
+    implementation(libs.koin.androidx.compose)
+
 
     // PdfBox
     implementation(libs.pdfbox.android)
@@ -77,5 +78,16 @@ dependencies {
     // Room Database
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
+
+    // Navigation 3
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.koin.navigation3)
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation3.ui)
+    implementation(libs.androidx.material3.navigation3)
+
+    // Adaptive Navigation Suite
+    implementation(libs.androidx.compose.material3.adaptive.navigation.suite)
 
 }
