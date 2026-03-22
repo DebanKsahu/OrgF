@@ -27,8 +27,6 @@ device. No data ever leaves it.
    - [2. Push the LLM model](#2-push-the-llm-model)
    - [3. Build & install](#3-build--install)
 - [Build Commands](#build-commands)
-- [Database Schema](#database-schema)
-- [Coding Conventions](#coding-conventions)
 - [Privacy](#privacy)
 
 ---
@@ -178,75 +176,6 @@ adb push gemma3-1b-it-int4.task /data/local/tmp/llm/gemma/gemma3-1b-it-int4.task
 ./gradlew clean
 ```
 
----
-
-## Database Schema
-
-The Room database (`AppDatabase`, `exportSchema = false`) contains two entities:
-
-### `PromptCategoryTable`
-
-| Column     | Type                  | Notes                                                           |
-|------------|-----------------------|-----------------------------------------------------------------|
-| `id`       | `INTEGER` PRIMARY KEY | Auto-generated                                                  |
-| `category` | `TEXT`                | `PromptCategory.name` string via `PromptCategoryTableConverter` |
-
-### `PromptClusterTable`
-
-| Column            | Type                  | Notes                                                        |
-|-------------------|-----------------------|--------------------------------------------------------------|
-| `id`              | `INTEGER` PRIMARY KEY | Auto-generated                                               |
-| `parentClusterId` | `INTEGER` nullable    | `null` → Layer 1; non-null → Layer 2 or 3                    |
-| `categoryId`      | `INTEGER`             | FK → `PromptCategoryTable.id`                                |
-| `text`            | `TEXT` nullable       | Present only on Layer 3 leaf nodes                           |
-| `vectorEmbedding` | `BLOB`                | Little-endian `FloatArray` via `PromptClusterTableConverter` |
-
-> `insertPromptCategory` uses `OnConflictStrategy.IGNORE`. Callers must handle the `-1L` return
-> value and fall back to a `SELECT` query.
-
----
-
-## Coding Conventions
-
-### Dependency Injection
-
-- **Android components** (`Service`, `Activity`) — inject via `by inject()`:
-  ```kotlin
-  private val serviceState: ServiceState by inject()
-  ```
-- **Non-Android classes** — inject via `KoinJavaComponent.inject()`:
-  ```kotlin
-  private val appDatabase: AppDatabase by inject(clazz = AppDatabase::class.java)
-  ```
-- New project-wide singletons go into `getCoreKoinModule()` in `core/di/CoreKoinModule.kt`.
-- `TextEmbedding` is a Koin `factory` resolved with `parametersOf(modelIndex, delegateIndex)`.
-
-### Coroutines
-
-- Service scopes: `CoroutineScope(Dispatchers.IO + SupervisorJob())`, cancelled in `onDestroy()`.
-- IO-bound work: `withContext(Dispatchers.IO)`.
-- `AgentService` event processing: `flatMapMerge(concurrency = 4)` annotated with
-  `@OptIn(ExperimentalCoroutinesApi::class)`.
-
-### Foreground Services
-
-- Both services return `START_STICKY` from `onStartCommand`.
-- Foreground type: `ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC` for API ≥ 34.
-- Notification channel IDs: `"FolderObserverServiceChannel"` and `"AgentServiceChannel"`.
-- Service startup: `startForegroundService()` on API ≥ 26, `startService()` below.
-
-### Enums
-
-`FileType` and `PromptCategory` share the same value set:
-
-```
-ImageType | VideoType | DocumentType | AudioType | UnknownType
-```
-
-Use the `getFileType(fileName: String): FileType` top-level helper in `utils/enums/FileType.kt` to
-derive a type from a filename.
-
----
 
 ## Privacy
 
