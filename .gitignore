@@ -15,4 +15,7 @@
 local.properties
 
 # Agent Related Files
+AGENT.md
 AGENTS.md
+/AGENT.md
+/AGENTS.md
