@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -14,12 +15,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -33,6 +32,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
@@ -138,62 +138,16 @@ private fun OrgFBrandHeader() {
 
 @Composable
 private fun OrgFLogoCard() {
-    Box(modifier = Modifier.size(190.dp), contentAlignment = Alignment.Center) {
-        Box(
-            modifier = Modifier
-                .size(174.dp)
-                .shadow(
-                    elevation = FolderPickerUiTokens.boldDepthStyle.logoGlowElevation,
-                    shape = RoundedCornerShape(38.dp),
-                    ambientColor = FolderPickerUiTokens.privacyAccent.copy(alpha = FolderPickerUiTokens.boldDepthStyle.logoGlowAmbientAlpha),
-                    spotColor = FolderPickerUiTokens.privacyAccent.copy(alpha = FolderPickerUiTokens.boldDepthStyle.logoGlowSpotAlpha)
-                )
+    Box(
+        modifier = Modifier.size(190.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.orgf_logo_no_bg),
+            contentDescription = "OrgF logo",
+            modifier = Modifier.size(170.dp),
+            contentScale = ContentScale.Fit
         )
-
-        Box(
-            modifier = Modifier
-                .size(150.dp)
-                .shadow(
-                    elevation = FolderPickerUiTokens.boldDepthStyle.logoCardElevation,
-                    shape = RoundedCornerShape(30.dp),
-                    ambientColor = FolderPickerUiTokens.deepShadow.copy(alpha = FolderPickerUiTokens.boldDepthStyle.logoCardShadowAlpha),
-                    spotColor = FolderPickerUiTokens.deepShadow.copy(alpha = FolderPickerUiTokens.boldDepthStyle.logoCardShadowAlpha)
-                )
-                .clip(RoundedCornerShape(30.dp))
-                .background(FolderPickerUiTokens.logoCardColor)
-                .border(1.dp, FolderPickerUiTokens.surfaceHighlight, RoundedCornerShape(30.dp)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_lock),
-                contentDescription = "OrgF logo",
-                tint = FolderPickerUiTokens.privacyAccent,
-                modifier = Modifier.size(72.dp)
-            )
-        }
-
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .offset(x = 8.dp, y = 8.dp)
-                .size(48.dp)
-                .shadow(
-                    elevation = FolderPickerUiTokens.boldDepthStyle.badgeElevation,
-                    shape = CircleShape,
-                    ambientColor = FolderPickerUiTokens.deepShadow.copy(alpha = FolderPickerUiTokens.boldDepthStyle.badgeAmbientAlpha),
-                    spotColor = FolderPickerUiTokens.privacyAccent.copy(alpha = FolderPickerUiTokens.boldDepthStyle.badgeSpotAlpha)
-                )
-                .clip(CircleShape)
-                .background(FolderPickerUiTokens.privacyAccent),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_folder),
-                contentDescription = "Folder picker badge",
-                tint = FolderPickerUiTokens.screenBottom,
-                modifier = Modifier.size(24.dp)
-            )
-        }
     }
 }
 
