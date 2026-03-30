@@ -14,10 +14,16 @@ composeBom = "2026.03.00"
 pdfboxAndroid = "2.0.27.0"
 playServicesMlkitTextRecognition = "19.0.1"
 roomRuntime = "2.8.4"
-tasksGenai = "0.10.32"
 
-koin-bom = "4.2.0-RC2"
+
+
+
+# Google Mediapipe/Ml Kit
+tasksGenai = "0.10.33"
 tasksText = "0.10.32"
+
+# Koin
+koin-bom = "4.2.0"
 
 # Navigation 3
 nav3Core = "1.0.1"
@@ -27,6 +33,9 @@ material3AdaptiveNav3 = "1.3.0-alpha09"
 # Serialization
 kotlinSerialization = "2.3.20"
 kotlinxSerializationCore = "1.10.0"
+
+# Database
+objectbox = "5.3.0"
 
 [libraries]
 androidx-compose-material3-adaptive-navigation-suite = { module = "androidx.compose.material3:material3-adaptive-navigation-suite" }
@@ -50,7 +59,7 @@ kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutine
 kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "kotlinxCoroutinesPlayServices" }
 pdfbox-android = { module = "com.tom-roush:pdfbox-android", version.ref = "pdfboxAndroid" }
 play-services-mlkit-text-recognition = { module = "com.google.android.gms:play-services-mlkit-text-recognition", version.ref = "playServicesMlkitTextRecognition" }
-tasks-genai = { module = "com.google.mediapipe:tasks-genai", version.ref = "tasksGenai" }
+
 
 # Koin
 koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koin-bom" }
@@ -58,8 +67,9 @@ koin-core = { module = "io.insert-koin:koin-core" }
 koin-android = { module = "io.insert-koin:koin-android" }
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose" }
 
-# Mediapipe
+# Mediapipe/ ML Kit
 tasks-text = { module = "com.google.mediapipe:tasks-text", version.ref = "tasksText" }
+tasks-genai = { module = "com.google.mediapipe:tasks-genai", version.ref = "tasksGenai" }
 
 # Serialization
 kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinxSerializationCore" }
@@ -82,3 +92,6 @@ android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 
 jetbrains-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinSerialization" }
+
+# Database
+objectbox = { id = "io.objectbox", version.ref = "objectbox" }
