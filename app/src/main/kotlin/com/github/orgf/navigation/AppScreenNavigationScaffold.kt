@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
+import com.github.orgf.promptscreen.ui.PromptScreenUi
 import com.github.orgf.utils.ui.NavigationAccentCyan
 import com.github.orgf.utils.ui.NavigationBackgroundBlue
 import com.github.orgf.utils.ui.NavigationInactiveBlue
@@ -73,7 +74,7 @@ fun AppScreenNavigationScaffold(
                         Text("Home Screen")
                     }
                     entry<NavigationRoutes.AppScreen.PromptScreen> {
-                        Text("Prompt Screen")
+                        PromptScreenUi()
                     }
                     entry<NavigationRoutes.AppScreen.SettingsScreen> {
                         Text("Settings Screen")
