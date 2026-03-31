@@ -24,17 +24,21 @@ import androidx.room.PrimaryKey
 )
 data class PromptClusterTable(
     @PrimaryKey(autoGenerate = true)
-    val id: Long,
+    val id: Long? = null,
 
     @ColumnInfo(index = true)
     val categoryId: Long,
 
     val parentClusterId: Long?,
 
-    val text: String,
+    val clusterSize: Int = 1,
+
+    val text: String? = null,
 
     @ColumnInfo(typeAffinity = ColumnInfo.BLOB)
-    val vectorEmbedding: FloatArray?
+    val vectorEmbedding: FloatArray,
+
+    val isEnabled: Boolean = true
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
