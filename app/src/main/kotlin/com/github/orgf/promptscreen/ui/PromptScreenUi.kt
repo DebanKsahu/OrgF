@@ -1,5 +1,6 @@
 package com.github.orgf.promptscreen.ui
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -30,6 +31,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -108,10 +111,13 @@ private object PromptTypography {
 
 @Composable
 fun PromptScreenUi() {
-
     val promptScreenViewModel: PromptScreenViewModel = koinViewModel()
+
+
     val promptScreenUiState =
         promptScreenViewModel.promptScreenUiState.collectAsStateWithLifecycle()
+    val selectedPromptFilter = remember { mutableStateOf("All") }
+
 
     OrgFTheme(darkTheme = true, dynamicColor = false) {
         if (promptScreenUiState.value.isLoading) {
@@ -120,7 +126,11 @@ fun PromptScreenUi() {
             Text(text = promptScreenUiState.value.error!!)
         } else {
             PromptScreenUiContent(
-                cards = promptScreenUiState.value.promptList ?: emptyList()
+                selectedFilter = selectedPromptFilter.value,
+                cards = promptScreenUiState.value.promptList ?: emptyList(),
+                onSelectFilter = { selectedFilter ->
+                    selectedPromptFilter.value = selectedFilter
+                }
             )
         }
 
@@ -131,7 +141,8 @@ fun PromptScreenUi() {
 fun PromptScreenUiContent(
     filters: List<String> = defaultPromptFilters(),
     selectedFilter: String = "All",
-    cards: List<PromptCardUiState> = defaultPromptCards()
+    cards: List<PromptCardUiState> = defaultPromptCards(),
+    onSelectFilter: (String) -> Unit
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
@@ -149,7 +160,11 @@ fun PromptScreenUiContent(
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     items(filters) { filter ->
-                        PromptFilterChip(text = filter, selected = filter == selectedFilter)
+                        PromptFilterChip(
+                            text = filter,
+                            selected = filter == selectedFilter,
+                            onSelectFilter = onSelectFilter
+                        )
                     }
                 }
             }
@@ -236,14 +251,17 @@ private fun PromptSearchField() {
 }
 
 @Composable
-private fun PromptFilterChip(text: String, selected: Boolean) {
+private fun PromptFilterChip(text: String, selected: Boolean, onSelectFilter: (String) -> Unit) {
     Card(
         shape = RoundedCornerShape(50),
         colors = CardDefaults.cardColors(containerColor = if (selected) LightBlue else PromptSurfaceSoft),
-        border = if (selected) null else androidx.compose.foundation.BorderStroke(
+        border = if (selected) null else BorderStroke(
             1.dp,
             PromptStroke
-        )
+        ),
+        onClick = {
+            onSelectFilter(text)
+        }
     ) {
         Text(
             text = text,
@@ -420,7 +438,9 @@ private fun buildPromptDescription(
 @Composable
 fun PromptScreenUiPreview() {
     OrgFTheme(darkTheme = true, dynamicColor = false) {
-        PromptScreenUiContent()
+        PromptScreenUiContent(
+            onSelectFilter = {}
+        )
     }
 }
 
