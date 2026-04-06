@@ -1,5 +1,4 @@
 package com.github.orgf.utils.ui
-
 import androidx.compose.ui.graphics.Color
 
 val Purple80 = Color(0xFFD0BCFF)
@@ -15,3 +14,6 @@ val LightBlue = Color(0xFF2B6CB0)
 val NavigationBackgroundBlue = Color(0xFF031826)
 val NavigationAccentCyan = Color(0xFF20C8FF)
 val NavigationInactiveBlue = Color(0xFF647A92)
+
+
+
