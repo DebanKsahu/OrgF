@@ -35,6 +35,8 @@ data class PromptClusterTable(
 
     val text: String? = null,
 
+    val destinationFolder: String? = null,
+
     @ColumnInfo(typeAffinity = ColumnInfo.BLOB)
     val vectorEmbedding: FloatArray,
 
@@ -60,7 +62,7 @@ data class PromptClusterTable(
         result = 31 * result + categoryId.hashCode()
         result = 31 * result + (parentClusterId?.hashCode() ?: 0)
         result = 31 * result + text.hashCode()
-        result = 31 * result + (vectorEmbedding?.contentHashCode() ?: 0)
+        result = 31 * result + vectorEmbedding.contentHashCode()
         return result
     }
 }

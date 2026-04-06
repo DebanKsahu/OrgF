@@ -21,7 +21,7 @@ interface PromptTableDao {
             LIMIT 1
         """
     )
-    suspend fun getPromptCategory(categoryName: PromptCategory): PromptCategoryTable?
+    suspend fun getPromptCategoryByName(categoryName: PromptCategory): PromptCategoryTable?
 
     @Query(
         """
@@ -68,8 +68,18 @@ interface PromptTableDao {
 
 
     @Insert
-    suspend fun insertPrompt(clusterData: PromptClusterTable): Long
+    suspend fun insertPromptCluster(clusterData: PromptClusterTable): Long
 
     @Update
     suspend fun updateCluster(newClusterData: PromptClusterTable)
+
+    @Query(
+        """
+        UPDATE PromptClusterTable 
+        SET isEnabled = :isActive 
+        WHERE id = :promptId
+    """
+    )
+    suspend fun updatePromptActiveStatus(promptId: Long, isActive: Boolean)
+
 }
