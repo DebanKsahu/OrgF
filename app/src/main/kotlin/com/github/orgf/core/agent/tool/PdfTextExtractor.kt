@@ -17,7 +17,7 @@ import java.io.File
 import kotlin.math.min
 
 class PdfTextExtractor(
-    private val platformContext: Context
+    platformContext: Context
 ) {
 
     init {
@@ -64,7 +64,7 @@ class PdfTextExtractor(
             val extractedText = StringBuilder()
 
 
-            val pagesToProcess = if (selectedPages == null || selectedPages?.size==0) {
+            val pagesToProcess = if (selectedPages == null || selectedPages.size == 0) {
                 (0 until min(15,totalPages)).toList()
             } else {
                 selectedPages
@@ -95,7 +95,7 @@ class PdfTextExtractor(
             val pdfRenderer = PdfRenderer(fileDescriptor)
             val totalPages = pdfRenderer.pageCount
 
-            val pagesToProcess = if (selectedPages == null || selectedPages?.size==0) {
+            val pagesToProcess = if (selectedPages == null || selectedPages.size == 0) {
                 (0 until min(totalPages,15)).toList()
             } else {
                 selectedPages

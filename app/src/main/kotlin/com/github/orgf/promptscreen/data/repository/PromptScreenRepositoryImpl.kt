@@ -1,13 +1,17 @@
 package com.github.orgf.promptscreen.data.repository
 
+import com.github.orgf.core.agent.models.PromptDetail
+import com.github.orgf.core.agent.prompt.PromptManager
 import com.github.orgf.core.database.AppDatabase
 import com.github.orgf.promptscreen.data.mapper.toPromptCardList
 import com.github.orgf.promptscreen.domain.model.PromptCard
+import com.github.orgf.promptscreen.domain.model.PromptDetailDomain
 import com.github.orgf.promptscreen.domain.repository.PromptScreenRepository
 import com.github.orgf.utils.enums.PromptCategory
 
 class PromptScreenRepositoryImpl(
-    private val appDatabase: AppDatabase
+    private val appDatabase: AppDatabase,
+    private val promptManager: PromptManager
 ) : PromptScreenRepository {
     override suspend fun getAllPrompts(): List<PromptCard> {
         return appDatabase.promptTableDao().getAllPrompts()
@@ -23,5 +27,20 @@ class PromptScreenRepositoryImpl(
         } catch (e: Exception) {
             throw error("Failed to get prompt category with id: $categoryId. Error: ${e.message}")
         }
+    }
+
+    override suspend fun updatePromptActiveStatus(promptId: Long, isActive: Boolean) {
+        appDatabase.promptTableDao().updatePromptActiveStatus(promptId, isActive)
+    }
+
+    override suspend fun addPrompt(promptDetail: PromptDetailDomain): Long {
+        val promptClusterId = promptManager.addPrompt(
+            promptDetail = PromptDetail(
+                category = promptDetail.category,
+                prompt = promptDetail.prompt,
+                destinationFolder = promptDetail.destinationFolder
+            )
+        )
+        return promptClusterId
     }
 }

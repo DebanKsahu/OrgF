@@ -18,28 +18,34 @@ class PromptScreenViewModel(
     val promptScreenUiState = _promptScreenUiState.asStateFlow()
 
     init {
+        loadAllPrompt()
+    }
+
+    fun loadAllPrompt() {
         viewModelScope.launch {
-            loadAllPrompt()
+            _promptScreenUiState.update { oldState ->
+                oldState.copy(promptList = null, isLoading = true, error = null)
+            }
+            try {
+                val promptList = promptScreenRepository.getAllPrompts()
+                _promptScreenUiState.update { oldState ->
+                    oldState.copy(
+                        promptList = promptList.toPromptCardUiStateList(),
+                        isLoading = false,
+                        error = null
+                    )
+                }
+            } catch (e: Exception) {
+                _promptScreenUiState.update { oldState ->
+                    oldState.copy(promptList = null, isLoading = false, error = e.message)
+                }
+            }
         }
     }
 
-    suspend fun loadAllPrompt() {
-        _promptScreenUiState.update { oldState ->
-            oldState.copy(promptList = null, isLoading = true, error = null)
-        }
-        try {
-            val promptList = promptScreenRepository.getAllPrompts()
-            _promptScreenUiState.update { oldState ->
-                oldState.copy(
-                    promptList = promptList.toPromptCardUiStateList(),
-                    isLoading = false,
-                    error = null
-                )
-            }
-        } catch (e: Exception) {
-            _promptScreenUiState.update { oldState ->
-                oldState.copy(promptList = null, isLoading = false, error = e.message)
-            }
+    fun updatePromptActiveStatus(promptId: Long, isEnabled: Boolean) {
+        viewModelScope.launch {
+            promptScreenRepository.updatePromptActiveStatus(promptId, isEnabled)
         }
     }
 

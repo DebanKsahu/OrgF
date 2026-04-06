@@ -25,12 +25,14 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -50,6 +52,9 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.orgf.R
 import com.github.orgf.promptscreen.ui.state.PromptCardUiState
@@ -110,13 +115,32 @@ private object PromptTypography {
 }
 
 @Composable
-fun PromptScreenUi() {
+fun PromptScreenUi(
+    onAddPromptClick: () -> Unit
+) {
+    val promptScreenLifecycleOwner = LocalLifecycleOwner.current
+
     val promptScreenViewModel: PromptScreenViewModel = koinViewModel()
 
+    val defaultPromptFilters = listOf("All", "Images", "Documents", "Videos")
 
     val promptScreenUiState =
         promptScreenViewModel.promptScreenUiState.collectAsStateWithLifecycle()
     val selectedPromptFilter = remember { mutableStateOf("All") }
+
+    DisposableEffect(promptScreenLifecycleOwner) {
+        val obsercer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                promptScreenViewModel.loadAllPrompt()
+            }
+        }
+
+        promptScreenLifecycleOwner.lifecycle.addObserver(obsercer)
+
+        onDispose {
+            promptScreenLifecycleOwner.lifecycle.removeObserver(obsercer)
+        }
+    }
 
 
     OrgFTheme(darkTheme = true, dynamicColor = false) {
@@ -126,30 +150,67 @@ fun PromptScreenUi() {
             Text(text = promptScreenUiState.value.error!!)
         } else {
             PromptScreenUiContent(
-                selectedFilter = selectedPromptFilter.value,
-                cards = promptScreenUiState.value.promptList ?: emptyList(),
+                promptFilters = defaultPromptFilters,
+                selectedPromptFilter = selectedPromptFilter.value,
+                promptCards = promptScreenUiState.value.promptList ?: emptyList(),
                 onSelectFilter = { selectedFilter ->
                     selectedPromptFilter.value = selectedFilter
+                },
+                onSwitchStateChange = { promptId, isEnabled ->
+                    promptScreenViewModel.updatePromptActiveStatus(
+                        promptId = promptId,
+                        isEnabled = isEnabled
+                    )
+                },
+                onAddPromptClick = {
+                    onAddPromptClick()
                 }
             )
         }
-
     }
 }
 
 @Composable
 fun PromptScreenUiContent(
-    filters: List<String> = defaultPromptFilters(),
-    selectedFilter: String = "All",
-    cards: List<PromptCardUiState> = defaultPromptCards(),
-    onSelectFilter: (String) -> Unit
+    promptFilters: List<String>,
+    selectedPromptFilter: String,
+    promptCards: List<PromptCardUiState>,
+    onSelectFilter: (String) -> Unit,
+    onSwitchStateChange: (Long, Boolean) -> Unit,
+    onAddPromptClick: () -> Unit
 ) {
-    Box(modifier = Modifier.fillMaxSize()) {
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        containerColor = PromptScreenBackground,
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onAddPromptClick,
+                containerColor = PromptFabContainer,
+                contentColor = PromptFabIconTint,
+                elevation = FloatingActionButtonDefaults.elevation(
+                    defaultElevation = 12.dp,
+                    pressedElevation = 18.dp,
+                    focusedElevation = 12.dp,
+                    hoveredElevation = 12.dp
+                )
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.outline_add_2_24),
+                    contentDescription = "Add prompt"
+                )
+            }
+        }
+    ) { innerPadding ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .background(PromptScreenBackground),
-            contentPadding = PaddingValues(bottom = 8.dp)
+            contentPadding = PaddingValues(
+                start = 0.dp,
+                top = innerPadding.calculateTopPadding(),
+                end = 0.dp,
+                bottom = innerPadding.calculateBottomPadding() + 8.dp
+            )
         ) {
             item { PromptTopBar() }
             item { PromptSearchField() }
@@ -159,41 +220,21 @@ fun PromptScreenUiContent(
                     contentPadding = PaddingValues(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    items(filters) { filter ->
+                    items(promptFilters) { filter ->
                         PromptFilterChip(
                             text = filter,
-                            selected = filter == selectedFilter,
+                            selected = filter == selectedPromptFilter,
                             onSelectFilter = onSelectFilter
                         )
                     }
                 }
             }
             item { Spacer(modifier = Modifier.height(18.dp)) }
-            items(cards) { card ->
+            items(promptCards) { card ->
                 Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-                    PromptRuleCard(model = card)
+                    PromptCard(promptCard = card, onSwitchStateChange = onSwitchStateChange)
                 }
             }
-        }
-
-        FloatingActionButton(
-            onClick = {},
-            containerColor = PromptFabContainer,
-            contentColor = PromptFabIconTint,
-            elevation = FloatingActionButtonDefaults.elevation(
-                defaultElevation = 12.dp,
-                pressedElevation = 18.dp,
-                focusedElevation = 12.dp,
-                hoveredElevation = 12.dp
-            ),
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(20.dp)
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.outline_add_2_24),
-                contentDescription = "Add prompt"
-            )
         }
     }
 }
@@ -273,13 +314,16 @@ private fun PromptFilterChip(text: String, selected: Boolean, onSelectFilter: (S
 }
 
 @Composable
-private fun PromptRuleCard(model: PromptCardUiState) {
-    val cardContainerColor = if (model.isEnabled) PromptSurface else PromptSurfaceInactive
-    val cardStrokeColor = if (model.isEnabled) PromptStroke else PromptStrokeInactive
-    val titleColor = if (model.isEnabled) Color.White else PromptMutedTextInactive
-    val metadataColor = if (model.isEnabled) PromptMutedText else PromptMutedTextInactive
-    val iconTint = if (model.isEnabled) LightBlue else PromptMutedTextInactive
-    val iconContainerColor = if (model.isEnabled) Color(0xFF1A3A52) else PromptSurfaceSoft
+private fun PromptCard(
+    promptCard: PromptCardUiState,
+    onSwitchStateChange: (Long, Boolean) -> Unit
+) {
+    val cardContainerColor = if (promptCard.isEnabled) PromptSurface else PromptSurfaceInactive
+    val cardStrokeColor = if (promptCard.isEnabled) PromptStroke else PromptStrokeInactive
+    val titleColor = if (promptCard.isEnabled) Color.White else PromptMutedTextInactive
+    val metadataColor = if (promptCard.isEnabled) PromptMutedText else PromptMutedTextInactive
+    val iconTint = if (promptCard.isEnabled) LightBlue else PromptMutedTextInactive
+    val iconContainerColor = if (promptCard.isEnabled) Color(0xFF1A3A52) else PromptSurfaceSoft
 
     Card(
         modifier = Modifier
@@ -287,7 +331,7 @@ private fun PromptRuleCard(model: PromptCardUiState) {
             .height(PromptCardHeight)
             .border(1.dp, cardStrokeColor, RoundedCornerShape(24.dp)),
         shape = RoundedCornerShape(24.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = if (model.isEnabled) 2.dp else 0.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (promptCard.isEnabled) 2.dp else 0.dp),
         colors = CardDefaults.cardColors(containerColor = cardContainerColor)
     ) {
         Column(
@@ -304,8 +348,8 @@ private fun PromptRuleCard(model: PromptCardUiState) {
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        painter = painterResource(id = model.iconRes),
-                        contentDescription = model.promptCategory,
+                        painter = painterResource(id = promptCard.iconRes),
+                        contentDescription = promptCard.promptCategory,
                         tint = iconTint,
                         modifier = Modifier.size(22.dp)
                     )
@@ -314,7 +358,7 @@ private fun PromptRuleCard(model: PromptCardUiState) {
                 Column(modifier = Modifier.weight(1f)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = model.promptCategory,
+                            text = promptCard.promptCategory,
                             color = titleColor,
                             style = PromptTypography.cardTitle
                         )
@@ -323,13 +367,18 @@ private fun PromptRuleCard(model: PromptCardUiState) {
                             modifier = Modifier
                                 .size(10.dp)
                                 .clip(CircleShape)
-                                .background(if (model.isEnabled) PromptActive else PromptMutedText)
+                                .background(if (promptCard.isEnabled) PromptActive else PromptMutedText)
                         )
                     }
                 }
                 Switch(
-                    checked = model.isEnabled,
-                    onCheckedChange = {},
+                    checked = promptCard.isEnabled,
+                    onCheckedChange = {
+                        onSwitchStateChange(
+                            promptCard.promptId,
+                            it
+                        )
+                    },
                     colors = SwitchDefaults.colors(
                         checkedTrackColor = LightBlue,
                         checkedThumbColor = Color.White,
@@ -340,12 +389,12 @@ private fun PromptRuleCard(model: PromptCardUiState) {
             }
             Spacer(modifier = Modifier.height(10.dp))
             Text(
-                text = model.promptText,
+                text = promptCard.promptText,
                 color = metadataColor,
                 style = PromptTypography.cardDescription,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.alpha(if (model.isEnabled) 1f else 0.75f)
+                modifier = Modifier.alpha(if (promptCard.isEnabled) 1f else 0.75f)
             )
 
             Spacer(modifier = Modifier.weight(1f))
@@ -353,11 +402,41 @@ private fun PromptRuleCard(model: PromptCardUiState) {
     }
 }
 
-private fun defaultPromptFilters(): List<String> =
-    listOf("All", "Images", "Documents", "Videos")
 
-private fun defaultPromptCards(): List<PromptCardUiState> =
-    listOf(
+private fun buildPromptDescription(
+    baseText: String,
+    emphasizedText: String,
+    tailText: String,
+    highlightedTail: String? = null
+): AnnotatedString {
+    return buildAnnotatedString {
+        withStyle(SpanStyle(color = PromptMutedText)) { append(baseText) }
+        withStyle(SpanStyle(color = Color.White, fontWeight = FontWeight.Bold)) {
+            append(
+                emphasizedText
+            )
+        }
+        if (highlightedTail != null && tailText.contains(highlightedTail)) {
+            val prefix = tailText.substringBefore(highlightedTail)
+            val suffix = tailText.substringAfter(highlightedTail)
+            withStyle(SpanStyle(color = PromptMutedText)) { append(prefix) }
+            withStyle(SpanStyle(color = LightBlue, fontWeight = FontWeight.SemiBold)) {
+                append(
+                    highlightedTail
+                )
+            }
+            withStyle(SpanStyle(color = PromptMutedText)) { append(suffix) }
+        } else {
+            withStyle(SpanStyle(color = PromptMutedText)) { append(tailText) }
+        }
+    }
+}
+
+@Preview
+@Composable
+fun PromptScreenUiPreview() {
+    val defaultPromptFilters = listOf("All", "Images", "Documents", "Videos")
+    val defaultPromptCards = listOf(
         PromptCardUiState(
             promptId = 1L,
             promptText = buildPromptDescription(
@@ -404,43 +483,16 @@ private fun defaultPromptCards(): List<PromptCardUiState> =
         )
     )
 
-
-private fun buildPromptDescription(
-    baseText: String,
-    emphasizedText: String,
-    tailText: String,
-    highlightedTail: String? = null
-): AnnotatedString {
-    return buildAnnotatedString {
-        withStyle(SpanStyle(color = PromptMutedText)) { append(baseText) }
-        withStyle(SpanStyle(color = Color.White, fontWeight = FontWeight.Bold)) {
-            append(
-                emphasizedText
-            )
-        }
-        if (highlightedTail != null && tailText.contains(highlightedTail)) {
-            val prefix = tailText.substringBefore(highlightedTail)
-            val suffix = tailText.substringAfter(highlightedTail)
-            withStyle(SpanStyle(color = PromptMutedText)) { append(prefix) }
-            withStyle(SpanStyle(color = LightBlue, fontWeight = FontWeight.SemiBold)) {
-                append(
-                    highlightedTail
-                )
-            }
-            withStyle(SpanStyle(color = PromptMutedText)) { append(suffix) }
-        } else {
-            withStyle(SpanStyle(color = PromptMutedText)) { append(tailText) }
-        }
-    }
-}
-
-@Preview
-@Composable
-fun PromptScreenUiPreview() {
     OrgFTheme(darkTheme = true, dynamicColor = false) {
         PromptScreenUiContent(
-            onSelectFilter = {}
+            onSelectFilter = {},
+            promptFilters = defaultPromptFilters,
+            selectedPromptFilter = defaultPromptFilters[0],
+            promptCards = defaultPromptCards,
+            onSwitchStateChange = { _, _ ->
+
+            },
+            onAddPromptClick = {},
         )
     }
 }
-
