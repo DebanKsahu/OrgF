@@ -21,7 +21,11 @@ sealed interface NavigationRoutes : NavKey {
         data object HomeScreen : NavigationRoutes
 
         @Serializable
-        data object PromptScreen : NavigationRoutes
+        data object PromptScreen : NavigationRoutes {
+
+            @Serializable
+            data object AddPromptScreen : NavigationRoutes
+        }
 
         @Serializable
         data object SettingsScreen : NavigationRoutes
@@ -47,6 +51,10 @@ val navigationRoutesSerializableConfig = SavedStateConfiguration {
             subclass(
                 NavigationRoutes.AppScreen.PromptScreen::class,
                 NavigationRoutes.AppScreen.PromptScreen::class.serializer()
+            )
+            subclass(
+                NavigationRoutes.AppScreen.PromptScreen.AddPromptScreen::class,
+                NavigationRoutes.AppScreen.PromptScreen.AddPromptScreen::class.serializer()
             )
             subclass(
                 NavigationRoutes.AppScreen.SettingsScreen::class,
