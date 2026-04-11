@@ -11,9 +11,9 @@ suspend fun PromptClusterTable.toPromptCard(appDatabase: AppDatabase): PromptCar
             val promptCategoryDetail =
                 appDatabase.promptTableDao().getPromptCategoryById(categoryId)
             promptCategoryDetail?.categoryName
-                ?: throw error("There is no prompt category with id: $categoryId")
+                ?: error("There is no prompt category with id: $categoryId")
         } catch (e: Exception) {
-            throw error("Failed to get prompt category with id: $categoryId. Error: ${e.message}")
+            error("Failed to get prompt category with id: $categoryId. Error: ${e.message}")
         }
         PromptCard(
             promptId = this.id,

@@ -23,10 +23,19 @@ class PromptScreenRepositoryImpl(
             val promptCategoryDetail =
                 appDatabase.promptTableDao().getPromptCategoryById(categoryId)
             promptCategoryDetail?.categoryName
-                ?: throw error("There is no prompt category with id: $categoryId")
+                ?: error("There is no prompt category with id: $categoryId")
         } catch (e: Exception) {
-            throw error("Failed to get prompt category with id: $categoryId. Error: ${e.message}")
+            error("Failed to get prompt category with id: $categoryId. Error: ${e.message}")
         }
+    }
+
+    override suspend fun getPromptsByCategory(category: PromptCategory): List<PromptCard> {
+        val categoryId =
+            appDatabase.promptTableDao().getPromptCategoryIdByName(categoryName = category) ?: -1
+        val result = appDatabase.promptTableDao()
+            .getPromptByCategory(categoryId = categoryId)
+            .toPromptCardList(appDatabase = appDatabase)
+        return result
     }
 
     override suspend fun updatePromptActiveStatus(promptId: Long, isActive: Boolean) {

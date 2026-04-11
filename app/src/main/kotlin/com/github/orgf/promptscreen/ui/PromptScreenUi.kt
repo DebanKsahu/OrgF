@@ -25,6 +25,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -58,6 +59,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.orgf.R
 import com.github.orgf.promptscreen.ui.state.PromptCardUiState
+import com.github.orgf.utils.enums.PromptCategory
 import com.github.orgf.utils.ui.LightBlue
 import com.github.orgf.utils.ui.OrgFTheme
 import org.koin.androidx.compose.koinViewModel
@@ -122,51 +124,49 @@ fun PromptScreenUi(
 
     val promptScreenViewModel: PromptScreenViewModel = koinViewModel()
 
-    val defaultPromptFilters = listOf("All", "Images", "Documents", "Videos")
+    val defaultPromptFilters = listOf("All") + PromptCategory.entries.map { it.name }
 
     val promptScreenUiState =
         promptScreenViewModel.promptScreenUiState.collectAsStateWithLifecycle()
     val selectedPromptFilter = remember { mutableStateOf("All") }
 
     DisposableEffect(promptScreenLifecycleOwner) {
-        val obsercer = LifecycleEventObserver { _, event ->
+        val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 promptScreenViewModel.loadAllPrompt()
             }
         }
 
-        promptScreenLifecycleOwner.lifecycle.addObserver(obsercer)
+        promptScreenLifecycleOwner.lifecycle.addObserver(observer)
 
         onDispose {
-            promptScreenLifecycleOwner.lifecycle.removeObserver(obsercer)
+            promptScreenLifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
 
 
     OrgFTheme(darkTheme = true, dynamicColor = false) {
-        if (promptScreenUiState.value.isLoading) {
-            CircularProgressIndicator()
-        } else if (promptScreenUiState.value.error != null) {
-            Text(text = promptScreenUiState.value.error!!)
-        } else {
-            PromptScreenUiContent(
-                promptFilters = defaultPromptFilters,
-                selectedPromptFilter = selectedPromptFilter.value,
-                promptCards = promptScreenUiState.value.promptList ?: emptyList(),
-                onSelectFilter = { selectedFilter ->
-                    selectedPromptFilter.value = selectedFilter
-                },
-                onSwitchStateChange = { promptId, isEnabled ->
-                    promptScreenViewModel.updatePromptActiveStatus(
-                        promptId = promptId,
-                        isEnabled = isEnabled
-                    )
-                },
-                onAddPromptClick = {
-                    onAddPromptClick()
-                }
-            )
-        }
+        PromptScreenUiContent(
+            promptFilters = defaultPromptFilters,
+            selectedPromptFilter = selectedPromptFilter.value,
+            promptCards = promptScreenUiState.value.promptList ?: emptyList(),
+            isLoading = promptScreenUiState.value.isLoading,
+            error = promptScreenUiState.value.error,
+            onSelectFilter = { selectedFilter ->
+                selectedPromptFilter.value = selectedFilter
+                if (selectedFilter == "All") promptScreenViewModel.loadAllPrompt()
+                else promptScreenViewModel.loadPromptByCategory(filter = selectedFilter)
+            },
+            onSwitchStateChange = { promptId, isEnabled ->
+                promptScreenViewModel.updatePromptActiveStatus(
+                    promptId = promptId,
+                    isEnabled = isEnabled
+                )
+            },
+            onAddPromptClick = {
+                onAddPromptClick()
+            }
+        )
     }
 }
 
@@ -175,6 +175,8 @@ fun PromptScreenUiContent(
     promptFilters: List<String>,
     selectedPromptFilter: String,
     promptCards: List<PromptCardUiState>,
+    isLoading: Boolean,
+    error: String?,
     onSelectFilter: (String) -> Unit,
     onSwitchStateChange: (Long, Boolean) -> Unit,
     onAddPromptClick: () -> Unit
@@ -230,9 +232,58 @@ fun PromptScreenUiContent(
                 }
             }
             item { Spacer(modifier = Modifier.height(18.dp)) }
-            items(promptCards) { card ->
-                Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-                    PromptCard(promptCard = card, onSwitchStateChange = onSwitchStateChange)
+            when {
+                isLoading -> {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 24.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(color = LightBlue)
+                        }
+                    }
+                }
+
+                !error.isNullOrBlank() -> {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 24.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = error,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
+                }
+
+                promptCards.isEmpty() -> {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 24.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "No prompts found",
+                                color = PromptMutedText
+                            )
+                        }
+                    }
+                }
+
+                else -> {
+                    items(promptCards) { card ->
+                        Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                            PromptCard(promptCard = card, onSwitchStateChange = onSwitchStateChange)
+                        }
+                    }
                 }
             }
         }
@@ -489,6 +540,8 @@ fun PromptScreenUiPreview() {
             promptFilters = defaultPromptFilters,
             selectedPromptFilter = defaultPromptFilters[0],
             promptCards = defaultPromptCards,
+            isLoading = false,
+            error = null,
             onSwitchStateChange = { _, _ ->
 
             },

@@ -45,6 +45,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.orgf.R
 import com.github.orgf.utils.enums.PromptCategory
 import com.github.orgf.utils.ui.OrgFTheme
@@ -130,6 +131,7 @@ fun AddPromptScreenUi(
     onSavePromptClick: () -> Unit
 ) {
     val addPromptScreenViewModel: AddPromptScreenViewModel = koinViewModel()
+    val newPromptState = addPromptScreenViewModel.newPromptState.collectAsStateWithLifecycle()
 
     OrgFTheme(darkTheme = true, dynamicColor = false) {
         AddPromptScreenContent(
@@ -146,7 +148,10 @@ fun AddPromptScreenUi(
             },
             onPromptTextChange = { currPrompt ->
                 addPromptScreenViewModel.updatePrompt(prompt = currPrompt)
-            }
+            },
+            selectedFileType = newPromptState.value.category,
+            initialFolderName = newPromptState.value.destinationFolder,
+            initialPromptText = newPromptState.value.prompt
         )
     }
 }
@@ -160,10 +165,10 @@ fun AddPromptScreenContent(
     onPromptTextChange: (String) -> Unit = {},
     initialFolderName: String = "",
     initialPromptText: String = "",
-    initialFileTypeExpanded: Boolean = false
+    initialFileTypeExpanded: Boolean = false,
+    selectedFileType: PromptCategory? = null
 ) {
     val fileTypes = remember { PromptCategory.entries.toList() }
-    var selectedFileType by remember { mutableStateOf(fileTypes.firstOrNull()) }
     var isFileTypeExpanded by remember { mutableStateOf(initialFileTypeExpanded) }
 
 
@@ -207,7 +212,6 @@ fun AddPromptScreenContent(
                 selectedFileType = selectedFileType,
                 isExpanded = isFileTypeExpanded,
                 onFileTypeClick = { fileType ->
-                    selectedFileType = fileType
                     onFileTypeClick(fileType)
                 },
                 onMoreClick = { isFileTypeExpanded = !isFileTypeExpanded }

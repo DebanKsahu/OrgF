@@ -10,6 +10,8 @@ interface PromptScreenRepository {
 
     suspend fun getPromptCategoryById(categoryId: Long): PromptCategory
 
+    suspend fun getPromptsByCategory(category: PromptCategory): List<PromptCard>
+
     suspend fun updatePromptActiveStatus(promptId: Long, isActive: Boolean)
 
     suspend fun addPrompt(promptDetail: PromptDetailDomain): Long
