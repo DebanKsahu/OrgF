@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import com.github.orgf.core.database.models.PromptCategoryTable
 import com.github.orgf.core.database.models.PromptClusterTable
@@ -16,12 +17,12 @@ interface PromptTableDao {
 
     @Query(
         """
-            SELECT * FROM PromptCategoryTable 
+            SELECT id FROM PromptCategoryTable 
             WHERE categoryName = :categoryName
             LIMIT 1
         """
     )
-    suspend fun getPromptCategoryByName(categoryName: PromptCategory): PromptCategoryTable?
+    suspend fun getPromptCategoryIdByName(categoryName: PromptCategory): Long?
 
     @Query(
         """
@@ -34,6 +35,19 @@ interface PromptTableDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertPromptCategory(promptCategory: PromptCategoryTable): Long
+
+    @Transaction
+    suspend fun getOrCreatePromptCategoryId(categoryName: PromptCategory): Long {
+        val insertedCategoryId = insertPromptCategory(
+            promptCategory = PromptCategoryTable(categoryName = categoryName)
+        )
+        if (insertedCategoryId != -1L) {
+            return insertedCategoryId
+        }
+
+        return getPromptCategoryIdByName(categoryName = categoryName)
+            ?: error("Failed to resolve PromptCategory id for: $categoryName")
+    }
 
     // PromptClusterTable
 
@@ -52,19 +66,28 @@ interface PromptTableDao {
 
     @Query(
         """
-        SELECT * FROM PromptClusterTable 
-        WHERE id = :clusterId
-    """
-    )
-    suspend fun getPromptClusterById(clusterId: Long): PromptClusterTable?
-
-    @Query(
-        """
         SELECT * FROM PromptClusterTable
         WHERE text IS NOT NULL
     """
     )
     suspend fun getAllPrompts(): List<PromptClusterTable>
+
+    @Query(
+        """
+        SELECT * FROM PromptClusterTable 
+        WHERE id = :clusterId
+    """
+    )
+    suspend fun getPromptById(clusterId: Long): PromptClusterTable?
+
+    @Query(
+        """
+            SELECT * FROM PromptClusterTable 
+            WHERE categoryId = :categoryId
+            AND text IS NOT NULL
+        """
+    )
+    suspend fun getPromptByCategory(categoryId: Long): List<PromptClusterTable>
 
 
     @Insert
