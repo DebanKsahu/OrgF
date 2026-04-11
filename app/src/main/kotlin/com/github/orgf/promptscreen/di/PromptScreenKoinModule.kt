@@ -17,6 +17,9 @@ fun getPromptScreenKoinModule() = module {
     }
 
     factory<PromptScreenRepository> {
-        PromptScreenRepositoryImpl(appDatabase = get(), promptManager = get())
+        PromptScreenRepositoryImpl(
+            appDatabase = get(),
+            promptManager = get()
+        )
     }
 }
