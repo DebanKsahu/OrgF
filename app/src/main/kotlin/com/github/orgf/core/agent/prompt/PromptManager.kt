@@ -2,9 +2,9 @@ package com.github.orgf.core.agent.prompt
 
 import com.github.orgf.core.agent.models.PromptDetail
 import com.github.orgf.core.agent.models.PromptUpdateDetail
+import com.github.orgf.core.agent.tool.EmbeddingTypes
 import com.github.orgf.core.agent.tool.TextEmbedding
 import com.github.orgf.core.database.AppDatabase
-import com.github.orgf.core.database.models.PromptCategoryTable
 import com.github.orgf.core.database.models.PromptClusterTable
 import com.google.mediapipe.tasks.components.containers.Embedding
 
@@ -14,23 +14,18 @@ class PromptManager(
 ) {
 
 	companion object {
-		const val LAYER1_SIMILARITY_SCORE_THRESHOLD = 0.6
-		const val LAYER2_SIMILARITY_SCORE_THRESHOLD = 0.8
+		const val LAYER1_SIMILARITY_SCORE_THRESHOLD = 0.4
+		const val LAYER2_SIMILARITY_SCORE_THRESHOLD = 0.4
 	}
 
 	suspend fun addPrompt(promptDetail: PromptDetail): Long {
-		var categoryId = appDatabase.promptTableDao().insertPromptCategory(
-			promptCategory = PromptCategoryTable(categoryName = promptDetail.category)
-		)
-		if (categoryId == -1L) {
-			categoryId = appDatabase.promptTableDao()
-				.getPromptCategoryByName(categoryName = promptDetail.category)?.id ?: -1L
-		}
+		val categoryId = appDatabase.promptTableDao()
+			.getOrCreatePromptCategoryId(categoryName = promptDetail.category)
 
 		val promptEmbedding = textEmbeddingTools.calculateEmbedding(promptDetail.prompt)
 		if (promptEmbedding != null) {
 			val clusterGroupLayerOne = appDatabase.promptTableDao()
-				.getTopLevelPromptClustersByCategoryId(categoryId = categoryId)
+				.getLayer1PromptClustersByCategoryId(categoryId = categoryId)
 			if (clusterGroupLayerOne.isEmpty()) {
 				val newLayerThreeClusterId = createNewCluster(
 					categoryId = categoryId,
@@ -106,7 +101,7 @@ class PromptManager(
 			}
 		} else {
 			val errorMsg = "Prompt Embedding Is Null"
-			throw error(message = errorMsg)
+			error(message = errorMsg)
 		}
 	}
 
@@ -124,8 +119,8 @@ class PromptManager(
 		for (cluster in clusterList) {
 			if (cluster.id != null) {
 				val similarityScore = textEmbeddingTools.compareEmbeddings(
-					embedding1 = Embedding.create(cluster.vectorEmbedding, null, 0, null),
-					embedding2 = promptEmbedding
+					embedding1 = EmbeddingTypes.FloatArrayType(cluster.vectorEmbedding),
+					embedding2 = EmbeddingTypes.EmbeddingType(promptEmbedding)
 				)
 				if (similarityScore >= similarityScoreThreshold) {
 					possibleClusterCandidates.add(cluster.id)
@@ -161,7 +156,7 @@ class PromptManager(
 
 				if (changeVectorEmbeddingCentroid) {
 					val parentClusterDetail = appDatabase.promptTableDao()
-						.getPromptClusterById(clusterId = parentClusterId)
+						.getPromptById(clusterId = parentClusterId)
 					if (parentClusterDetail != null) {
 						val newVectorEmbeddingCentroid = calculateNewVectorEmbeddingCentroid(
 							oldVectorEmbeddingCentroid = parentClusterDetail.vectorEmbedding,
@@ -195,7 +190,7 @@ class PromptManager(
 
 				if (changeVectorEmbeddingCentroid) {
 					val parentClusterDetail = appDatabase.promptTableDao()
-						.getPromptClusterById(clusterId = parentClusterId)
+						.getPromptById(clusterId = parentClusterId)
 					if (parentClusterDetail != null) {
 						val newVectorEmbeddingCentroid = calculateNewVectorEmbeddingCentroid(
 							oldVectorEmbeddingCentroid = parentClusterDetail.vectorEmbedding,
