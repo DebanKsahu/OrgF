@@ -1,5 +1,7 @@
 package com.github.orgf.core
 
+import android.net.Uri
+import androidx.documentfile.provider.DocumentFile
 import com.github.orgf.core.filemanager.models.NewFileEvent
 import com.github.orgf.utils.enums.getFileType
 import kotlinx.coroutines.channels.BufferOverflow
@@ -17,12 +19,19 @@ class ServiceState {
     )
     val fileEvent = _fileEvent.asSharedFlow()
 
-    suspend fun emitNewFileEvent(fullFilePath: String, fileName: String) {
+    suspend fun emitNewFileEvent(
+        fullFilePath: String,
+        fileName: String,
+        rootDoc: DocumentFile,
+        rootFolderUri: Uri
+    ) {
         _fileEvent.emit(
             NewFileEvent(
                 fullPath = fullFilePath,
                 fileName = fileName,
-                fileType = getFileType(fileName = fileName)
+                fileType = getFileType(fileName = fileName),
+                rootDoc = rootDoc,
+                rootFolderUri = rootFolderUri
             )
         )
     }
