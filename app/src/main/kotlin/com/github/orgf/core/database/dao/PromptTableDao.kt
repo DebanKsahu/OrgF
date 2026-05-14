@@ -62,7 +62,7 @@ interface PromptTableDao {
         WHERE categoryId = :categoryId 
         AND parentClusterId IS NULL
     """)
-    suspend fun getTopLevelPromptClustersByCategoryId(categoryId: Long): List<PromptClusterTable>
+    suspend fun getLayer1PromptClustersByCategoryId(categoryId: Long): List<PromptClusterTable>
 
     @Query(
         """
