@@ -6,6 +6,12 @@ import com.google.mediapipe.tasks.components.containers.Embedding
 import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.core.Delegate
 import com.google.mediapipe.tasks.text.textembedder.TextEmbedder
+import java.util.Optional
+
+sealed interface EmbeddingTypes {
+    class EmbeddingType(val embedding: Embedding) : EmbeddingTypes
+    class FloatArrayType(val embedding: FloatArray) : EmbeddingTypes
+}
 
 class TextEmbedding(
     private val platformContext: Context,
@@ -19,7 +25,8 @@ class TextEmbedding(
         const val UNIVERSAL_SENTENCE_ENCODER = 0
         const val SENTENCE_TRANSFORMER = 1
 
-        const val UNIVERSAL_SENTENCE_ENCODER_PATH = "textembedding/universal_sentence_encoder.tflite"
+        const val UNIVERSAL_SENTENCE_ENCODER_PATH =
+            "textembedding/universal_sentence_encoder.tflite"
         const val SENTENCE_TRANSFORMER_PATH = "textembedding/sentence_transformer.tflite"
 
         const val LOG_TAG = "TextEmbedding"
@@ -40,7 +47,10 @@ class TextEmbedding(
         }
 
         when (currentModel) {
-            UNIVERSAL_SENTENCE_ENCODER -> baseOptionBuilder.setModelAssetPath(UNIVERSAL_SENTENCE_ENCODER_PATH)
+            UNIVERSAL_SENTENCE_ENCODER -> baseOptionBuilder.setModelAssetPath(
+                UNIVERSAL_SENTENCE_ENCODER_PATH
+            )
+
             SENTENCE_TRANSFORMER -> baseOptionBuilder.setModelAssetPath(SENTENCE_TRANSFORMER_PATH)
         }
 
@@ -71,8 +81,28 @@ class TextEmbedding(
         }
     }
 
-    fun compareEmbeddings(embedding1: Embedding, embedding2: Embedding): Double {
-        return TextEmbedder.cosineSimilarity(embedding1, embedding2)
+    fun compareEmbeddings(embedding1: EmbeddingTypes, embedding2: EmbeddingTypes): Double {
+
+        var targetEmbedding1 = when (embedding1) {
+            is EmbeddingTypes.EmbeddingType -> embedding1.embedding
+            is EmbeddingTypes.FloatArrayType -> Embedding.create(
+                embedding1.embedding,
+                byteArrayOf(),
+                0,
+                Optional.of("")
+            )
+        }
+
+        var targetEmbedding2 = when (embedding2) {
+            is EmbeddingTypes.EmbeddingType -> embedding2.embedding
+            is EmbeddingTypes.FloatArrayType -> Embedding.create(
+                embedding2.embedding,
+                byteArrayOf(),
+                0,
+                Optional.of("")
+            )
+        }
+        return TextEmbedder.cosineSimilarity(targetEmbedding1, targetEmbedding2)
     }
 
     fun calculateEmbedding(text: String): Embedding? {
