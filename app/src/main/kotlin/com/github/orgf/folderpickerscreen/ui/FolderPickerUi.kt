@@ -1,6 +1,7 @@
 package com.github.orgf.folderpickerscreen.ui
 
 import android.content.Context
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
@@ -57,6 +58,7 @@ fun FolderPickerUi(
     val folderPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocumentTree()
     ) { uri ->
+        Log.d("FolderPickerUi", "Folder selection result received: $uri")
         uri?.let {
             folderPickerViewModel.saveWorkspaceUri(appContext = appContext, workspaceUri = it)
             folderPickerViewModel.startRequiredBackgroundService(
@@ -64,13 +66,14 @@ fun FolderPickerUi(
                 workspaceUri = it
             )
         }
+        onSuccessfulWorkspaceSelection()
     }
 
     OrgFTheme(darkTheme = true, dynamicColor = false) {
         FolderPickerUiContent(
             onSelectWorkspaceClick = {
                 folderPickerLauncher.launch(null)
-                onSuccessfulWorkspaceSelection()
+
             }
         )
     }

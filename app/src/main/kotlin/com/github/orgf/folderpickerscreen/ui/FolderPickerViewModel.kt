@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
 import com.github.orgf.core.agent.AgentService
@@ -29,6 +30,7 @@ class FolderPickerViewModel : ViewModel() {
     }
 
     private fun startFolderObserverService(appContext: Context, workspaceUri: Uri) {
+        Log.d("ServiceLauncher", "Attempting to start service with URI: $workspaceUri")
         val intent = Intent(appContext, FolderObserverService::class.java).apply {
             putExtra(SELECTED_FOLDER_URI_KEY, workspaceUri.toString())
         }
