@@ -5,17 +5,27 @@ import com.github.orgf.R
 enum class PromptCategory {
     ImageType,
     VideoType,
-    DocumentType,
     AudioType,
+    PdfType,
+    WordType,
+    ExcelType,
+    PowerPointType,
+    TextType,
+    ArchiveType,
     UnknownType;
 
     fun toIconRes(): Int {
         return when (this) {
             ImageType -> R.drawable.ic_image
-            DocumentType -> R.drawable.ic_document
             VideoType -> R.drawable.ic_video
             AudioType -> R.drawable.ic_audio
             UnknownType -> R.drawable.ic_folder
+            PdfType -> R.drawable.ic_document
+            WordType -> R.drawable.ic_document
+            ExcelType -> R.drawable.ic_document
+            PowerPointType -> R.drawable.ic_document
+            TextType -> R.drawable.ic_document
+            ArchiveType -> R.drawable.ic_folder
         }
     }
 }
