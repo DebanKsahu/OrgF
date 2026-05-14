@@ -4,6 +4,7 @@ import androidx.room.Room
 import com.github.orgf.core.ServiceState
 import com.github.orgf.core.agent.LlmInferences
 import com.github.orgf.core.agent.prompt.PromptManager
+import com.github.orgf.core.agent.tool.FileOrganizer
 import com.github.orgf.core.agent.tool.PdfTextExtractor
 import com.github.orgf.core.agent.tool.TextEmbedding
 import com.github.orgf.core.database.AppDatabase
@@ -27,6 +28,22 @@ fun getCoreKoinModule() = module {
             platformContext = get(),
             currentModel = currentModel,
             currentDelegate = currentDelegate
+        )
+    }
+
+    factory<FileOrganizer> {
+        FileOrganizer(
+            pdfTextExtractor = get(),
+            textEmbedding = get(
+                parameters = {
+                    parametersOf(
+                        TextEmbedding.UNIVERSAL_SENTENCE_ENCODER,
+                        TextEmbedding.DELEGATE_CPU
+                    )
+                }
+            ),
+            appDatabase = get(),
+            applicationContext = get()
         )
     }
 
