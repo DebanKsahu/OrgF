@@ -70,7 +70,31 @@ class PromptScreenViewModel(
 
     fun updatePromptActiveStatus(promptId: Long, isEnabled: Boolean) {
         viewModelScope.launch {
-            promptScreenRepository.updatePromptActiveStatus(promptId, isEnabled)
+            _promptScreenUiState.update { oldState ->
+                oldState.copy(
+                    promptList = oldState.promptList?.map { prompt ->
+                        if (prompt.promptId == promptId) prompt.copy(isEnabled = isEnabled) else prompt
+                    },
+                    error = null
+                )
+            }
+
+            try {
+                promptScreenRepository.updatePromptActiveStatus(promptId, isEnabled)
+            } catch (e: Exception) {
+                _promptScreenUiState.update { oldState ->
+                    oldState.copy(
+                        promptList = oldState.promptList?.map { prompt ->
+                            if (prompt.promptId == promptId) {
+                                prompt.copy(isEnabled = !isEnabled)
+                            } else {
+                                prompt
+                            }
+                        },
+                        error = e.message
+                    )
+                }
+            }
         }
     }
 

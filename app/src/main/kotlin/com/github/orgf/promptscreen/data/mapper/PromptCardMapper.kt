@@ -19,7 +19,7 @@ suspend fun PromptClusterTable.toPromptCard(appDatabase: AppDatabase): PromptCar
             promptId = this.id,
             promptText = AnnotatedString(this.text),
             promptCategory = promptCategory.toString(),
-            isEnabled = true
+            isEnabled = this.isEnabled
         )
     } else {
         throw IllegalArgumentException("A valid prompt should have a not null id and text")

@@ -424,10 +424,10 @@ private fun PromptCard(
                 }
                 Switch(
                     checked = promptCard.isEnabled,
-                    onCheckedChange = {
+                    onCheckedChange = { checked ->
                         onSwitchStateChange(
                             promptCard.promptId,
-                            it
+                            checked
                         )
                     },
                     colors = SwitchDefaults.colors(
