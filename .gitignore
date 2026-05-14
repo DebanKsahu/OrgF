@@ -23,8 +23,5 @@ AGENTS.md
 # Local config
 
 # Android Studio / IntelliJ
-.idea/
-
-# Exceptions (optional shared configs)
-!.idea/codeStyles
-!.idea/inspectionProfiles
+/.idea/
+.idea
