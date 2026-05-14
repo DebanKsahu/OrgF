@@ -19,3 +19,12 @@ AGENT.md
 AGENTS.md
 /AGENT.md
 /AGENTS.md
+
+# Local config
+
+# Android Studio / IntelliJ
+.idea/
+
+# Exceptions (optional shared configs)
+!.idea/codeStyles
+!.idea/inspectionProfiles
