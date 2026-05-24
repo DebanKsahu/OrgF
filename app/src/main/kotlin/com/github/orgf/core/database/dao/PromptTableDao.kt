@@ -13,7 +13,45 @@ import com.github.orgf.utils.enums.PromptCategory
 @Dao
 interface PromptTableDao {
 
-    // PromptCategoryTable
+    /*
+    SQL operations for PromptCategoryTable.
+    This sections divided into 4 parts:
+    1. Insert Section (This contains all create operations)
+    2. Read Section (This contains all read operations)
+    3. Update Section (This contains all update operations)
+    4. Delete Section (This contains all delete operations)
+     */
+
+
+    // ------------------- Insert Section -------------------
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertPromptCategoryDetail(promptCategory: PromptCategoryTable): Long
+
+    @Transaction
+    suspend fun getOrInsertPromptCategoryIdByName(categoryName: PromptCategory): Long {
+        val insertedCategoryId = insertPromptCategoryDetail(
+            promptCategory = PromptCategoryTable(categoryName = categoryName)
+        )
+        if (insertedCategoryId != -1L) {
+            return insertedCategoryId
+        }
+
+        return getPromptCategoryIdByName(categoryName = categoryName)
+            ?: error("Failed to resolve PromptCategory id for: $categoryName")
+    }
+
+
+    // ------------------- Read Section ---------------------
+
+    @Query(
+        """
+            SELECT * FROM PromptCategoryTable 
+            WHERE id = :categoryId
+            LIMIT 1
+        """
+    )
+    suspend fun getPromptCategoryDetailById(categoryId: Long): PromptCategoryTable?
 
     @Query(
         """
@@ -26,51 +64,45 @@ interface PromptTableDao {
 
     @Query(
         """
-            SELECT * FROM PromptCategoryTable 
+            SELECT categoryName FROM PromptCategoryTable 
             WHERE id = :categoryId
-            LIMIT 1
         """
     )
-    suspend fun getPromptCategoryById(categoryId: Long): PromptCategoryTable?
+    suspend fun getPromptCategoryNameById(categoryId: Long): PromptCategory?
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertPromptCategory(promptCategory: PromptCategoryTable): Long
+    // ------------------- Update Section -------------------
 
-    @Transaction
-    suspend fun getOrCreatePromptCategoryId(categoryName: PromptCategory): Long {
-        val insertedCategoryId = insertPromptCategory(
-            promptCategory = PromptCategoryTable(categoryName = categoryName)
-        )
-        if (insertedCategoryId != -1L) {
-            return insertedCategoryId
-        }
 
-        return getPromptCategoryIdByName(categoryName = categoryName)
-            ?: error("Failed to resolve PromptCategory id for: $categoryName")
-    }
-
-    // PromptClusterTable
-
-    @Query("""
-        SELECT * FROM PromptClusterTable 
-        WHERE parentClusterId = :parentClusterId
-    """)
-    suspend fun getPromptClustersByParentClusterId(parentClusterId: Long?): List<PromptClusterTable>
-
-    @Query("""
-        SELECT * FROM PromptClusterTable 
-        WHERE categoryId = :categoryId 
-        AND parentClusterId IS NULL
-    """)
-    suspend fun getLayer1PromptClustersByCategoryId(categoryId: Long): List<PromptClusterTable>
+    // ------------------- Delete Section -------------------
 
     @Query(
         """
-        SELECT * FROM PromptClusterTable
-        WHERE text IS NOT NULL
-    """
+            DELETE FROM PromptCategoryTable 
+            WHERE id = :categoryId
+        """
     )
-    suspend fun getAllPrompts(): List<PromptClusterTable>
+    suspend fun deletePromptCategoryDetailById(categoryId: Long): Int
+
+    suspend fun deletePromptCategoryDetailByName(categoryName: PromptCategory): Int {
+        val categoryId = getPromptCategoryIdByName(categoryName = categoryName)
+        return if (categoryId == null) 0 else deletePromptCategoryDetailById(categoryId = categoryId)
+    }
+
+    /*
+    SQL operations for PromptCusterTable.
+    This sections divided into 4 parts:
+    1. Insert Section (This contains all create operations)
+    2. Read Section (This contains all read operations)
+    3. Update Section (This contains all update operations)
+    4. Delete Section (This contains all delete operations)
+     */
+
+    // ------------------- Insert Section ---------------------
+
+    @Insert
+    suspend fun insertPromptClusterDetail(clusterData: PromptClusterTable): Long
+
+    // ------------------- Read Section -----------------------
 
     @Query(
         """
@@ -78,7 +110,40 @@ interface PromptTableDao {
         WHERE id = :clusterId
     """
     )
-    suspend fun getPromptById(clusterId: Long): PromptClusterTable?
+    suspend fun getPromptClusterDetailById(clusterId: Long): PromptClusterTable?
+
+    @Query(
+        """
+        SELECT * FROM PromptClusterTable 
+        WHERE categoryId = :categoryId
+        """
+    )
+    suspend fun getPromptClusterDetailByCategoryId(categoryId: Long): List<PromptClusterTable>
+
+    @Query(
+        """
+        SELECT * FROM PromptClusterTable 
+        WHERE parentClusterId = :parentClusterId
+    """
+    )
+    suspend fun getPromptClusterDetailByParentClusterId(parentClusterId: Long?): List<PromptClusterTable>
+
+    @Query(
+        """
+        SELECT * FROM PromptClusterTable 
+        WHERE categoryId = :categoryId 
+        AND parentClusterId IS NULL
+    """
+    )
+    suspend fun getLayer1PromptClusterDetailByCategoryId(categoryId: Long): List<PromptClusterTable>
+
+    @Query(
+        """
+        SELECT * FROM PromptClusterTable
+        WHERE text IS NOT NULL
+    """
+    )
+    suspend fun getAllPromptDetail(): List<PromptClusterTable>
 
     @Query(
         """
@@ -87,14 +152,12 @@ interface PromptTableDao {
             AND text IS NOT NULL
         """
     )
-    suspend fun getPromptByCategory(categoryId: Long): List<PromptClusterTable>
+    suspend fun getPromptDetailByCategoryId(categoryId: Long): List<PromptClusterTable>
 
-
-    @Insert
-    suspend fun insertPromptCluster(clusterData: PromptClusterTable): Long
+    // ------------------- Update Section ---------------------
 
     @Update
-    suspend fun updateCluster(newClusterData: PromptClusterTable)
+    suspend fun updatePromptClusterDetail(newClusterData: PromptClusterTable)
 
     @Query(
         """
@@ -104,5 +167,7 @@ interface PromptTableDao {
     """
     )
     suspend fun updatePromptActiveStatus(promptId: Long, isActive: Boolean)
+
+    // ------------------- Delete Section ---------------------
 
 }
