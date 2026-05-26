@@ -154,6 +154,12 @@ interface PromptTableDao {
     )
     suspend fun getPromptDetailByCategoryId(categoryId: Long): List<PromptClusterTable>
 
+    @Transaction
+    suspend fun getPromptDetailByCategoryName(categoryName: PromptCategory): List<PromptClusterTable> {
+        val categoryId = getPromptCategoryIdByName(categoryName = categoryName) ?: -1
+        return getPromptDetailByCategoryId(categoryId = categoryId)
+    }
+
     // ------------------- Update Section ---------------------
 
     @Update

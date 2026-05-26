@@ -133,13 +133,13 @@ class FileOrganizer(
         val fileTextEmbedding = textEmbedding.calculateEmbedding(text = fileTextContent)
         if (fileTextEmbedding != null) {
             val categoryId = appDatabase.promptTableDao()
-                .getOrCreatePromptCategoryId(categoryName = targetCategory)
+                .getOrInsertPromptCategoryIdByName(categoryName = targetCategory)
             val availableLayer1Candidates = mutableListOf<PromptClusterTable>()
             val availableLayer2Candidates = mutableListOf<PromptClusterTable>()
 
             // Iterate through layer 1 clusters to find layer2 cluster candidates
             for (promptCluster in appDatabase.promptTableDao()
-                .getLayer1PromptClustersByCategoryId(categoryId = categoryId)) {
+                .getLayer1PromptClusterDetailByCategoryId(categoryId = categoryId)) {
                 val similarityScore = textEmbedding.compareEmbeddings(
                     embedding1 = EmbeddingTypes.FloatArrayType(promptCluster.vectorEmbedding),
                     embedding2 = EmbeddingTypes.EmbeddingType(fileTextEmbedding)
@@ -159,7 +159,7 @@ class FileOrganizer(
             // Iterate through layer 2 clusters to find layer3 cluster candidates
             for (promptCluster in availableLayer1Candidates) {
                 for (subPromptCluster in appDatabase.promptTableDao()
-                    .getPromptClustersByParentClusterId(promptCluster.id)) {
+                    .getPromptClusterDetailByParentClusterId(promptCluster.id)) {
                     val similarityScore = textEmbedding.compareEmbeddings(
                         embedding1 = EmbeddingTypes.FloatArrayType(subPromptCluster.vectorEmbedding),
                         embedding2 = EmbeddingTypes.EmbeddingType(fileTextEmbedding)
@@ -181,7 +181,7 @@ class FileOrganizer(
             var currentBestPromptCluster: PromptClusterTable? = null
             for (promptCluster in availableLayer2Candidates) {
                 for (subPromptCluster in appDatabase.promptTableDao()
-                    .getPromptClustersByParentClusterId(promptCluster.id)) {
+                    .getPromptClusterDetailByParentClusterId(promptCluster.id)) {
                     val similarityScore = textEmbedding.compareEmbeddings(
                         embedding1 = EmbeddingTypes.FloatArrayType(subPromptCluster.vectorEmbedding),
                         embedding2 = EmbeddingTypes.EmbeddingType(fileTextEmbedding)
