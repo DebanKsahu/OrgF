@@ -2,9 +2,9 @@ package com.github.orgf.promptscreen.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.orgf.promptscreen.domain.model.toPromptCardUiStateList
 import com.github.orgf.promptscreen.domain.repository.PromptScreenRepository
-import com.github.orgf.promptscreen.ui.state.PromptScreenUiState
+import com.github.orgf.promptscreen.ui.model.PromptScreenUiState
+import com.github.orgf.promptscreen.ui.model.toPromptCardUiStateList
 import com.github.orgf.utils.enums.PromptCategory
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,7 +28,7 @@ class PromptScreenViewModel(
                 oldState.copy(isLoading = true, error = null)
             }
             try {
-                val promptList = promptScreenRepository.getAllPrompts()
+                val promptList = promptScreenRepository.getAllPromptDetail()
                 _promptScreenUiState.update { oldState ->
                     oldState.copy(
                         promptList = promptList.toPromptCardUiStateList(),
@@ -52,7 +52,7 @@ class PromptScreenViewModel(
             }
             try {
                 val promptList =
-                    promptScreenRepository.getPromptsByCategory(category = promptCategory)
+                    promptScreenRepository.getPromptDetailByCategoryName(category = promptCategory)
                 _promptScreenUiState.update { oldState ->
                     oldState.copy(
                         promptList = promptList.toPromptCardUiStateList(),

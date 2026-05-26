@@ -2,9 +2,9 @@ package com.github.orgf.promptscreen.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.orgf.promptscreen.domain.model.PromptDetailDomain
+import com.github.orgf.promptscreen.domain.model.PromptDetail
 import com.github.orgf.promptscreen.domain.repository.PromptScreenRepository
-import com.github.orgf.promptscreen.ui.state.NewPromptUiState
+import com.github.orgf.promptscreen.ui.model.NewPromptUiState
 import com.github.orgf.utils.enums.PromptCategory
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,8 +20,8 @@ class AddPromptScreenViewModel(
 
     fun addPrompt() {
         viewModelScope.launch {
-            promptScreenRepository.addPrompt(
-                promptDetail = PromptDetailDomain(
+            promptScreenRepository.addPromptDetail(
+                promptDetail = PromptDetail(
                     prompt = _newPromptState.value.prompt,
                     category = _newPromptState.value.category,
                     destinationFolder = _newPromptState.value.destinationFolder

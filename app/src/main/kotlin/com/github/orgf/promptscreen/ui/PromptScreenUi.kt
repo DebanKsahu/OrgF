@@ -58,7 +58,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.orgf.R
-import com.github.orgf.promptscreen.ui.state.PromptCardUiState
+import com.github.orgf.promptscreen.ui.model.PromptCardUiState
 import com.github.orgf.utils.enums.PromptCategory
 import com.github.orgf.utils.ui.LightBlue
 import com.github.orgf.utils.ui.OrgFTheme
