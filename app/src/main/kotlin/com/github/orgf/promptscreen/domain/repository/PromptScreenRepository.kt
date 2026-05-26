@@ -6,14 +6,14 @@ import com.github.orgf.promptscreen.domain.model.PromptDetailDomain
 import com.github.orgf.utils.enums.PromptCategory
 
 interface PromptScreenRepository {
-    suspend fun getAllPrompts(): List<PromptCard>
+    suspend fun getAllPromptDetail(): List<PromptCard>
 
-    suspend fun getPromptCategoryById(categoryId: Long): PromptCategory
+    suspend fun getPromptCategoryDetailById(categoryId: Long): PromptCategory
 
-    suspend fun getPromptsByCategory(category: PromptCategory): List<PromptCard>
+    suspend fun getPromptDetailByCategoryName(category: PromptCategory): List<PromptCard>
 
     suspend fun updatePromptActiveStatus(promptId: Long, isActive: Boolean)
 
-    suspend fun addPrompt(promptDetail: PromptDetailDomain): Long
+    suspend fun addPromptDetail(promptDetail: PromptDetailDomain): Long
 
 }
