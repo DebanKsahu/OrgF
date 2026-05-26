@@ -1,6 +1,5 @@
 package com.github.orgf.promptscreen.data.repository
 
-import com.github.orgf.core.agent.prompt.PromptManager
 import com.github.orgf.core.agent.tool.EmbeddingTypes
 import com.github.orgf.core.agent.tool.TextEmbedding
 import com.github.orgf.core.database.AppDatabase
@@ -14,7 +13,6 @@ import com.google.mediapipe.tasks.components.containers.Embedding
 
 class PromptScreenRepositoryImpl(
     private val appDatabase: AppDatabase,
-    private val promptManager: PromptManager,
     private val textEmbeddingTools: TextEmbedding
 ) : PromptScreenRepository {
 

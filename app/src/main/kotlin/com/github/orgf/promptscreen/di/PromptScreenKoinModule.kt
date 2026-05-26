@@ -1,10 +1,12 @@
 package com.github.orgf.promptscreen.di
 
+import com.github.orgf.core.agent.tool.TextEmbedding
 import com.github.orgf.promptscreen.data.repository.PromptScreenRepositoryImpl
 import com.github.orgf.promptscreen.domain.repository.PromptScreenRepository
 import com.github.orgf.promptscreen.ui.AddPromptScreenViewModel
 import com.github.orgf.promptscreen.ui.PromptScreenViewModel
 import org.koin.core.module.dsl.viewModel
+import org.koin.core.parameter.parametersOf
 import org.koin.dsl.module
 
 fun getPromptScreenKoinModule() = module {
@@ -19,7 +21,14 @@ fun getPromptScreenKoinModule() = module {
     factory<PromptScreenRepository> {
         PromptScreenRepositoryImpl(
             appDatabase = get(),
-            promptManager = get()
+            textEmbeddingTools = get(
+                parameters = {
+                    parametersOf(
+                        TextEmbedding.UNIVERSAL_SENTENCE_ENCODER,
+                        TextEmbedding.DELEGATE_CPU
+                    )
+                }
+            )
         )
     }
 }
