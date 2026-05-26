@@ -2,7 +2,7 @@ package com.github.orgf.promptscreen.domain.repository
 
 
 import com.github.orgf.promptscreen.domain.model.PromptCard
-import com.github.orgf.promptscreen.domain.model.PromptDetailDomain
+import com.github.orgf.promptscreen.domain.model.PromptDetail
 import com.github.orgf.utils.enums.PromptCategory
 
 interface PromptScreenRepository {
@@ -14,6 +14,6 @@ interface PromptScreenRepository {
 
     suspend fun updatePromptActiveStatus(promptId: Long, isActive: Boolean)
 
-    suspend fun addPromptDetail(promptDetail: PromptDetailDomain): Long
+    suspend fun addPromptDetail(promptDetail: PromptDetail): Long
 
 }
