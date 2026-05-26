@@ -1,4 +1,4 @@
-package com.github.orgf.promptscreen.ui.state
+package com.github.orgf.promptscreen.ui.model
 
 import com.github.orgf.utils.enums.PromptCategory
 
