@@ -5,7 +5,7 @@ import com.github.orgf.core.agent.tool.TextEmbedding
 import com.github.orgf.core.database.AppDatabase
 import com.github.orgf.core.database.models.PromptClusterTable
 import com.github.orgf.promptscreen.domain.model.PromptCard
-import com.github.orgf.promptscreen.domain.model.PromptDetailDomain
+import com.github.orgf.promptscreen.domain.model.PromptDetail
 import com.github.orgf.promptscreen.domain.model.toPromptCardList
 import com.github.orgf.promptscreen.domain.repository.PromptScreenRepository
 import com.github.orgf.utils.enums.PromptCategory
@@ -48,7 +48,7 @@ class PromptScreenRepositoryImpl(
         appDatabase.promptTableDao().updatePromptActiveStatus(promptId, isActive)
     }
 
-    override suspend fun addPromptDetail(promptDetail: PromptDetailDomain): Long {
+    override suspend fun addPromptDetail(promptDetail: PromptDetail): Long {
         val categoryId = appDatabase.promptTableDao()
             .getOrInsertPromptCategoryIdByName(categoryName = promptDetail.category)
 
