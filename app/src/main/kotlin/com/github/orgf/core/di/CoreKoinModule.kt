@@ -3,7 +3,6 @@ package com.github.orgf.core.di
 import androidx.room.Room
 import com.github.orgf.core.ServiceState
 import com.github.orgf.core.agent.LlmInferences
-import com.github.orgf.core.agent.prompt.PromptManager
 import com.github.orgf.core.agent.tool.FileOrganizer
 import com.github.orgf.core.agent.tool.PdfTextExtractor
 import com.github.orgf.core.agent.tool.TextEmbedding
@@ -44,21 +43,6 @@ fun getCoreKoinModule() = module {
             ),
             appDatabase = get(),
             applicationContext = get()
-        )
-    }
-
-    // Agent:Prompt
-    factory<PromptManager> {
-        PromptManager(
-            appDatabase = get(),
-            textEmbeddingTools = get(
-                parameters = {
-                    parametersOf(
-                        TextEmbedding.UNIVERSAL_SENTENCE_ENCODER,
-                        TextEmbedding.DELEGATE_CPU
-                    )
-                }
-            )
         )
     }
 
